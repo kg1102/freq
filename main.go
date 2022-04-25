@@ -14,7 +14,7 @@ import (
 
 func main(){
 	fmt.Println("\n")
-	fmt.Println("Frequester tool By tojojo !!")
+	fmt.Println("Frequester tool By tojojo v2 !!")
 	fmt.Println("Enhanced by KaioGomes")
 	fmt.Println("\n")
 
