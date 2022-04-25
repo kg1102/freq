@@ -4,8 +4,8 @@ import (
 	"sync"
 	"bufio"
 	"net/http"
-    "flag"
-    "fmt"
+    	"flag"
+    	"fmt"
 	"os"
 	"strings"
 	"io/ioutil"
@@ -19,7 +19,7 @@ func main(){
 
 	colorReset := "\033[0m"
 	colorRed := "\033[31m"
-    colorGreen := "\033[32m"
+    	colorGreen := "\033[32m"
 
 	silent := flag.Bool("silent", false, "display findings only")
 	flag.Parse()
@@ -37,6 +37,8 @@ func main(){
 				client := &http.Client{}
 				req, err := http.NewRequest("GET", domain, nil)
 				req.Header.Add("Referer", `http://google.com/aa?x="()&%</meta>';</script><script>alert(98748)</script><!--`)
+				req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:99.0) Gecko/20100101 Firefox/99.0")
+				fmt.Println(req);
 				resp, err := client.Do(req)
 
 				if err != nil{
