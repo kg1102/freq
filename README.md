@@ -7,6 +7,8 @@ you can use this tool for findings xss and sql injection vulnerablity from multi
 
 # How to Install?
 go get -u https://github.com/kg1102/freq
+or  
+GO111MODULE=on go get -v github.com/kg1102/freq
 
 
 # smart Use
