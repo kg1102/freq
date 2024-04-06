@@ -8,9 +8,11 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"html/template"
 )
 
 func main() {
@@ -78,8 +80,14 @@ func checkRefererXSS(domain string, silent *bool, colorRed, colorGreen, colorRes
 		return
 	}
 
-	checkResult := doc.Find("html").Text()
-	if strings.Contains(checkResult, "'\"()&%<acx><ScRiPt>alert(9534)</ScRiPt>") {
+	htmlContent, err := doc.Html()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	escapedHTML := template.HTMLEscapeString(htmlContent)
+	if strings.Contains(escapedHTML, "'\"()&%<acx><ScRiPt>alert(9534)</ScRiPt>") {
 		fmt.Println(string(colorRed), "[REFERER XSS] - Vulnerable To XSS:", domain, string(colorReset))
 	} else {
 		if !*silent {
@@ -115,8 +123,14 @@ func checkQueryXSS(domain string, silent *bool, colorRed, colorGreen, colorReset
 		return
 	}
 
-	checkResult := doc.Find("html").Text()
-	if strings.Contains(checkResult, "\"><svg/onload=alert(1)") {
+	htmlContent, err := doc.Html()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	escapedHTML := template.HTMLEscapeString(htmlContent)
+	if strings.Contains(escapedHTML, "\"><svg/onload=alert(1)") {
 		fmt.Println(string(colorRed), "[QUERY] - Vulnerable To XSS:", domain, string(colorReset))
 	} else {
 		if !*silent {
