@@ -59,7 +59,7 @@ func main(){
 	   			}
 	   			sb := string(body)
 
-	   			check_result := strings.Contains(sb , "alert(9534)")
+	   			check_result := strings.Contains(sb , "'\"()&%<acx><ScRiPt>alert(9534)</ScRiPt>")
 	   			if check_result != false {
 	   				fmt.Println(string(colorRed), "[REFERER XSS] - Vulnerable To XSS: ", domain, string(colorReset))
 	   			}else{
@@ -92,7 +92,7 @@ func main(){
 	      			fmt.Println(err2)
 	   			}
 	   			sb2 := string(body2)
-	   			check_result2 := strings.Contains(sb2 , "alert(1)")
+	   			check_result2 := strings.Contains(sb2 , "\"><svg/onload=alert(1)")
 	   			if check_result2 != false {
 	   				fmt.Println(string(colorRed), "[QUERY] - Vulnerable To XSS: ", domain, string(colorReset))
 	   			}else{
