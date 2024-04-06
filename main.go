@@ -1,6 +1,7 @@
 package main
 
 import (
+	"sync"
 	"bufio"
 	"crypto/tls"
 	"flag"
