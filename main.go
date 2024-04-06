@@ -73,10 +73,18 @@ func checkRefererXSS(domain string, silent *bool, colorRed, colorGreen, colorRes
 	defer resp.Body.Close()
 
 	// Read response body
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println(err)
-		return
+	body := make([]byte, 0)
+	buf := make([]byte, 1024)
+	for {
+		n, err := resp.Body.Read(buf)
+		if err != nil && err.Error() != "EOF" {
+			fmt.Println(err)
+			break
+		}
+		if n == 0 {
+			break
+		}
+		body = append(body, buf[:n]...)
 	}
 
 	if strings.Contains(string(body), "'\"()&%<acx><ScRiPt>alert(9534)</ScRiPt>") {
@@ -110,10 +118,18 @@ func checkQueryXSS(domain string, silent *bool, colorRed, colorGreen, colorReset
 	defer resp.Body.Close()
 
 	// Read response body
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println(err)
-		return
+	body := make([]byte, 0)
+	buf := make([]byte, 1024)
+	for {
+		n, err := resp.Body.Read(buf)
+		if err != nil && err.Error() != "EOF" {
+			fmt.Println(err)
+			break
+		}
+		if n == 0 {
+			break
+		}
+		body = append(body, buf[:n]...)
 	}
 
 	if strings.Contains(string(body), "\"><svg/onload=alert(1)") {
