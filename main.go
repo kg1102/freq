@@ -1,7 +1,6 @@
 package main
 
 import (
-	"sync"
 	"bufio"
 	"crypto/tls"
 	"flag"
@@ -10,9 +9,6 @@ import (
 	"os"
 	"strings"
 	"time"
-
-	"github.com/PuerkitoBio/goquery"
-	"html/template"
 )
 
 func main() {
@@ -76,20 +72,14 @@ func checkRefererXSS(domain string, silent *bool, colorRed, colorGreen, colorRes
 	}
 	defer resp.Body.Close()
 
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	// Read response body
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	htmlContent, err := doc.Html()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	escapedHTML := template.HTMLEscapeString(htmlContent)
-	if strings.Contains(escapedHTML, "'\"()&%<acx><ScRiPt>alert(9534)</ScRiPt>") {
+	if strings.Contains(string(body), "'\"()&%<acx><ScRiPt>alert(9534)</ScRiPt>") {
 		fmt.Println(string(colorRed), "[REFERER XSS] - Vulnerable To XSS:", domain, string(colorReset))
 	} else {
 		if !*silent {
@@ -119,20 +109,14 @@ func checkQueryXSS(domain string, silent *bool, colorRed, colorGreen, colorReset
 	}
 	defer resp.Body.Close()
 
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	// Read response body
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	htmlContent, err := doc.Html()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	escapedHTML := template.HTMLEscapeString(htmlContent)
-	if strings.Contains(escapedHTML, "\"><svg/onload=alert(1)") {
+	if strings.Contains(string(body), "\"><svg/onload=alert(1)") {
 		fmt.Println(string(colorRed), "[QUERY] - Vulnerable To XSS:", domain, string(colorReset))
 	} else {
 		if !*silent {
