@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -31,24 +30,31 @@ func main() {
 	sc := bufio.NewScanner(os.Stdin)
 
 	jobs := make(chan string)
-	var wg sync.WaitGroup
+	done := make(chan bool)
 
 	for i := 0; i < 20; i++ {
-		wg.Add(1)
 		go func() {
-			defer wg.Done()
+			defer func() {
+				done <- true
+			}()
 			for domain := range jobs {
 				checkRefererXSS(domain, silent, colorRed, colorGreen, colorReset)
 				checkQueryXSS(domain, silent, colorRed, colorGreen, colorReset)
 			}
 		}()
 	}
-	for sc.Scan() {
-		domain := sc.Text()
-		jobs <- domain
+
+	go func() {
+		for sc.Scan() {
+			domain := sc.Text()
+			jobs <- domain
+		}
+		close(jobs)
+	}()
+
+	for i := 0; i < 20; i++ {
+		<-done
 	}
-	close(jobs)
-	wg.Wait()
 }
 
 func checkRefererXSS(domain string, silent *bool, colorRed, colorGreen, colorReset string) {
