@@ -29,21 +29,26 @@ func main() {
 
 	sc := bufio.NewScanner(os.Stdin)
 
-	var doneCount int
-	var totalJobs int
+	jobs := make(chan string)
+	done := make(chan bool)
 
-	for sc.Scan() {
-		totalJobs++
-		domain := sc.Text()
-		go func() {
+	go func() {
+		for sc.Scan() {
+			jobs <- sc.Text()
+		}
+		close(jobs)
+	}()
+
+	go func() {
+		for domain := range jobs {
 			checkRefererXSS(domain, silent, colorRed, colorGreen, colorReset)
 			checkQueryXSS(domain, silent, colorRed, colorGreen, colorReset)
-			doneCount++
-		}()
-	}
+		}
+		done <- true
+	}()
 
-	for doneCount < totalJobs {
-		time.Sleep(100 * time.Millisecond)
+	for range os.Args[1:] {
+		<-done
 	}
 }
 
